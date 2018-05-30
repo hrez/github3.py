@@ -151,6 +151,16 @@ class TestOrganization(IntegrationHelper):
             for member in o.members():
                 assert isinstance(member, github3.users.ShortUser)
 
+    def test_outside_collaborators(self):
+        """Test the ability to retrieve an organization's outside_collaborators."""
+        self.basic_login()
+        cassette_name = self.cassette_name('outside_collaborators')
+        with self.recorder.use_cassette(cassette_name):
+            o = self.get_organization()
+
+            for user in o.outside_collaborators():
+                assert isinstance(user, github3.users.ShortUser)
+
     @pytest.mark.xfail(
         reason="sigmavirus24 needs to actually write a test for this."
     )

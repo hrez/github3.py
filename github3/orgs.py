@@ -536,6 +536,27 @@ class Organization(BaseAccount):
         return self._iter(int(number), url, users.ShortUser, params=params,
                           etag=etag, headers=headers)
 
+    def outside_collaborators(self, filter=None, number=-1, etag=None):
+        r"""Iterate over members of this organization.
+
+        :param str filter: (optional), filter members returned by this method.
+            Can be one of: ``"2fa_disabled"``, ``"all",``. Default: ``"all"``.
+            Filtering by ``"2fa_disabled"`` is only available for organization
+            owners with private repositories.
+        :param int number: (optional), number of members to return. Default:
+            -1 will return all available.
+        :param str etag: (optional), ETag from a previous request to the same
+            endpoint
+        :returns: generator of :class:`User <github3.users.User>`\ s
+        """
+        headers = {}
+        params = {}
+        if filter in self.members_filters:
+            params['filter'] = filter
+        url = self._build_url('outside_collaborators', base_url=self._api)
+        return self._iter(int(number), url, users.ShortUser, params=params,
+                          etag=etag, headers=headers)
+
     def public_members(self, number=-1, etag=None):
         r"""Iterate over public members of this organization.
 
@@ -626,6 +647,20 @@ class Organization(BaseAccount):
             url = self._build_url('teams', str(team_id))
             json = self._json(self._get(url), 200)
         return self._instance_or_null(Team, json)
+
+    @requires_auth
+    def invite(self, username):
+        """Invite the user to join this org.
+
+        This returns a dictionary like so::
+
+            {'state': 'pending', 'url': 'https://api.github.com/teams/...'}
+
+        :param str username: (required), user to invite to join this org.
+        :returns: dictionary
+        """
+        url = self._build_url('memberships', username, base_url=self._api)
+        return self._json(self._put(url), 200)
 
 
 class Membership(GitHubCore):

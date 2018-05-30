@@ -298,6 +298,39 @@ class TestOrganizationIterator(helper.UnitIteratorHelper):
             headers={}
         )
 
+    def test_outside_collaborators(self):
+        """Show that one can iterate over all outside_collaborators."""
+        i = self.instance.outside_collaborators()
+        self.get_next(i)
+
+        self.session.get.assert_called_once_with(
+            url_for('outside_collaborators'),
+            params={'per_page': 100},
+            headers={}
+        )
+
+    def test_outside_collaborators_filters(self):
+        """Show that one can iterate over all members with 2fa_disabled."""
+        i = self.instance.outside_collaborators(filter='2fa_disabled')
+        self.get_next(i)
+
+        self.session.get.assert_called_once_with(
+            url_for('outside_collaborators'),
+            params={'per_page': 100, 'filter': '2fa_disabled'},
+            headers={}
+        )
+
+    def test_outside_collaborators_excludes_fake_filters(self):
+        """Show that one cannot pass a bogus filter to the API."""
+        i = self.instance.outside_collaborators(filter='bogus-filter')
+        self.get_next(i)
+
+        self.session.get.assert_called_once_with(
+            url_for('outside_collaborators'),
+            params={'per_page': 100},
+            headers={}
+        )
+
     def test_public_events(self):
         """Show that one can iterate over an organization's public events."""
         i = self.instance.public_events()
